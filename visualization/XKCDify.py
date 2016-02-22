@@ -108,7 +108,9 @@ def XKCDify(ax, mag=1.0,
             xaxis_arrow='+',
             yaxis_arrow='+',
             ax_extend=0.1,
-            expand_axes=False):
+            expand_axes=False,
+            mline_width=1.0,
+            bg_width=1.0):
     """Make axis look hand-drawn
 
     This adjusts all lines, text, legends, and axes in the figure to look
@@ -186,14 +188,14 @@ def XKCDify(ax, mag=1.0,
                                  mag, f1, f2, f3)
 
         # create foreground and background line
-        lw = line.get_linewidth()
+        lw = line.get_linewidth() * mline_width
         line.set_linewidth(2 * lw)
         line.set_data(x_int, y_int)
 
         # don't add background line for axes
         if (line is not xaxis) and (line is not yaxis):
             line_bg = pl.Line2D(x_int, y_int, color=bgcolor,
-                                linewidth=8 * lw)
+                                linewidth=8 * lw * bg_width)
 
             ax.add_line(line_bg)
         ax.add_line(line)
@@ -259,25 +261,3 @@ def XKCDify(ax, mag=1.0,
         ax.set_position([0, 0, 1, 1])
     
     return ax
-
-np.random.seed(0)
-
-ax = pylab.axes()
-
-x = np.linspace(0, 10, 100)
-ax.plot(x, np.sin(x) * np.exp(-0.1 * (x - 5) ** 2), 'b', lw=1, label='damped sine')
-ax.plot(x, -np.cos(x) * np.exp(-0.1 * (x - 5) ** 2), 'r', lw=1, label='damped cosine')
-
-ax.set_title('check it out!')
-ax.set_xlabel('x label')
-ax.set_ylabel('y label')
-
-ax.legend(loc='lower right')
-
-ax.set_xlim(0, 10)
-ax.set_ylim(-1.0, 1.0)
-
-#XKCDify the axes -- this operates in-place
-XKCDify(ax, xaxis_loc=0.0, yaxis_loc=1.0,
-        xaxis_arrow='+-', yaxis_arrow='+-',
-        expand_axes=True)

@@ -1,0 +1,243 @@
+---
+title: "Riddler Traffic Jam"
+author: "Jake Walker"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+  html_document:
+    toc: true
+---
+
+## Problem Summary
+[Last week](http://jakewalker56.github.io/2016/01/31/riddler-politicians-and-general-induction.html) I experimented with ruby's [gnuplot](https://github.com/rdp/ruby_gnuplot) plotting library to answer The Riddler's induction problem.  This week, I'm trying out RMarkdown for generating posts with inline R code and visualizations. With that in mind, let's have a look at [this weeks Riddler](http://fivethirtyeight.com/features/how-many-cars-will-get-stuck-in-traffic/):
+
+>There is a very long, straight highway with some number of cars (N) placed somewhere along it, randomly. The highway is only one lane, so the cars can’t pass each other. Each car is going in the same direction, and each driver has a distinct positive speed at which she prefers to travel. Each preferred speed is chosen at random. Each driver travels at her preferred speed unless she gets stuck behind a slower car, in which case she remains stuck behind the slower car. On average, how many groups of cars will eventually form? (A group is one or more cars travelling at the same speed.)
+
+```{r, echo=FALSE, results='asis'}
+Project = "~/github"
+path= "/ml-lab/data"
+setwd(paste(Project, path, sep=""))
+library(ggplot2)
+```
+
+## Theoretical Explanation
+
+So we need to figure out how many groups there will be.  First, we notice that this question is isomorphic to the question "how many cars are stuck behind a slower car, and how many are at the front of a pack?"  The number of cars NOT stuck behind another car is the same as the number of groups.
+
+Suppose we had an array of all the cars on the road.  The ith element in the array represents the ith car in line, and the value of the ith element is the speed of that car.  For example, if we had the following array:
+
+`speeds <- [2, 3, 1]`
+
+that would represent a line of three cars.  The first car in line is going 2 mph, the second car in line is going 3 mph, and the last car in line is going 1 mph.
+
+In this formulation, the answer to the question "is car i stuck behind a slower car?" is the same as the answer to the question "is there a value in `speeds[0:(i-1)]` that is less than the value at `speeds[i]`?"
+
+Imagine we're looking at the slowest car in line.  Clearly there is no one slower than him, so he definitely is in front of a group.
+
+Now let's consider the second slowest car in line.  She may be in front of the slowest car, or behind the slowest car.  If all the cars are randomly distributed, then we'd expect her to be in front half the time, and behind half the time.
+
+Now let's consider the third slowest car in line.  He may be in front of both the slowest and second slowest, he may be between them, or he may be in the back.  All are equally likely, because if you randomly order 3 cars, any individual car is equally likely to end up in each of the three positions.  So there is a 1/3 chance that car is in front of all the cars slower than he is (in which case he'll be at the head of a group), and a 2/3 chance he is behind a slower car (and he will not be at the head of a group).
+
+By this logic, car n has a 1/n chance of being in front of a group.  Hence, we expect the total number of groups to be:
+
+$$\sum_{i=1}^n {{i}\over{n}}$$
+
+We can plot what this looks like for different values of n:
+
+```{r fig.width=7}
+n_vals = c(5, 10, 25, 50, 75, 100, 150, 200, 300, 500, 750, 1000)
+expected = vector()
+for(n in n_vals) {
+  expected = c(expected, sum(unlist(lapply(1:n, function(x) 1/x))))
+  }
+p <- ggplot(data.frame(expected=expected, n_vals=n_vals), 
+    aes(x = n_vals, y = expected)) + 
+  geom_line(colour="red", linetype="dashed", size=0.5) + 
+  geom_point(colour="blue", size=4, shape=21, fill="white") + 
+  xlab("Number of Cars") +
+  ylab("Number of packs")
+p
+```
+
+Boy that curve looks familiar, doesn't it?
+
+## Approximations
+
+It turns out that $\sum_{i=1}^n {{i}\over{n}}$ is what's known as the [harmonic series](https://en.wikipedia.org/wiki/Harmonic_series_(mathematics)).  The harmonic series approaches the natural log of n plus the [Euler-Mascheroni Constant](https://en.wikipedia.org/wiki/Euler%E2%80%93Mascheroni_constant), which happens to be about 0.57, as n approaches infinity.  We can estimate the value of the harmonic series, which is much faster than calculating by hand for a sufficiently large n:
+
+
+```{r fig.width=7}
+approximate = vector()
+for(n in n_vals) {
+  approximate = c(approximate, log(n) + 0.57)
+  }
+
+p <- p + geom_line(data=data.frame(approximate=approximate, n_vals=n_vals),  
+                   aes(x = n_vals, y = approximate), color="black")
+p
+```
+
+The standard error of our approximation is given by `r sd(expected - approximate)`
+
+
+## Verifying with simulation
+
+So there's the theory.  But we're empiricists here.  Let's go ahead and simulate a random distribution of car speeds, and count up how many groups actually end up forming:
+
+```{r fig.width=7, fig.cap="Simulations are fun!"}
+runs = 10000
+simulated = vector()
+for(n in n_vals) {
+  results = vector()
+  for(j in 1:runs) {
+    #rand[i] represents the speed of the i'th car in line
+    rand <- sample(seq(1, n))
+    lim = n + 1
+    groups = 0
+    group_delims = list()
+    for(i in 1:n){
+      if(rand[i] < lim)
+      {
+        lim = rand[i]
+        groups = groups + 1
+        group_delims = c(group_delims, i)
+      }
+    }
+    results = c(results, groups)
+  }
+  simulated = c(simulated, mean(results))
+}
+
+p <- p + geom_line(data=data.frame(simulated=simulated, n_vals=n_vals),  
+                   aes(x = n_vals, y = simulated), color="purple")
+p
+```
+With our simulation, our standard error away from our expectation is `r sd(expected - simulated)`.  Alright, fine, I guess the theory worked out.
+
+## Extending the problem
+
+But this isn't realisitc, right? If the fastest driver is stuck behind the slowest, they are definitely going to pass them.  
+
+More generally, the faster you are than the pack you're stuck in, the more you want to pass, and the more people are in front of you, the harder it is to pass.  Let's formulate a decision rule for when driver d1 will pass his current group:
+
+>d1 will pass group g if $speed(d1) - speed(g) > passing pentaly * n$, where n is the number of cars between d1 and the front of g.
+
+So for a concrete example, if d1's ideal speed is 10, and he's stuck in a group with a speed of 5, and we set the passing penalty to 2, d1 will pass if he is second in line $(n=1, 10-5>2*1)$ or third in line $(n=2, 10-5>2*2)$, but not if he is fourth in line $(n=3, 10-5!>2*3)$
+
+In this formulation, we will have to run through our array multiple times.  If d1 passes g, he may end up stuck behind yet another group g2, which he will then pass.  Some of this is going to depend on implementation- do you pass from the front of the group first, or the back?  Here's my implementation:
+
+(Note: this appears to perform very badly for large values of n.  I'm a little surprised, as I was under the impression vector() was implemented as a linked list.  Best guess, this is doing a full memory copy of the rand vector ever time we rearrange.  There's probably significant performance tweaking to be done here)
+
+```{r fig.width=7, fig.height = 6, fig.cap="Passing Simulations"}
+#codify our decision rule
+decision_rule <- function(driver_speed, group_speed, distance, passing_penalty) {
+  return(driver_speed - group_speed > distance * passing_penalty)
+}
+
+#redraw original graph
+p <- ggplot(data.frame(expected=expected, n_vals=n_vals), aes(x = n_vals, y = expected)) + 
+  geom_line(colour="red", linetype="dashed", size=0.5) + 
+  geom_point(colour="black", size=1, shape=21, fill="white") + 
+  xlab("Number of Cars") +
+  ylab("Number of packs")
+
+#plot an empty canvas for our iterations
+plot(x=vector(), y=vector(),xlim=c(0, max(n_vals)), ylim = c(0,100), 
+     xlab="Number of Cars", ylab="Number of iterations until steady state")
+
+passing_penalties = c(2, 3, 4, 5, 10, 25, 50)
+for(passing_penalty in passing_penalties){
+  runs = 10
+  simulated_extension = vector()
+  simulated_extension_iterations = vector()
+  iterations = vector()
+  final_group_delims = vector()
+  final_rands = vector()
+  for(n in n_vals) {
+    results = vector()
+    for(j in 1:runs) {
+      rand <- sample(seq(1, n))
+      change_made = TRUE
+      iteration = 0
+  
+      #declare in a scope we can use later
+      groups = 0
+      group_delims = vector()
+      
+      while(change_made) {
+        change_made = FALSE
+        iteration = iteration + 1
+        lim = n + 1
+        groups = 0
+        group_delims = vector()
+      
+        #identify groups
+        for(i in 1:n){
+          if(rand[i] < lim)
+          {
+            lim = rand[i]
+            groups = groups + 1
+            group_delims = c(group_delims, i)
+          }
+        }
+        
+        #iterate through array and look for people who will pass
+        for(i in 1:n){
+          if(i %in% group_delims){
+            #this driver is at the front of a group; do nothing
+            next
+          }
+          group_leader = max(group_delims[group_delims < i])
+          if(decision_rule(rand[i], rand[group_leader], i - group_leader, passing_penalty))
+          {
+            #this car will pass its group!  Rearrange the array
+            val = rand[i]
+            #remove the index
+            rand = rand[-i]
+            #add the index to the front of the group
+            rand = append(rand, val, group_leader - 1)
+            #need to modify the group_delims to reflect new position of 
+            #the current group leader, who just moved back one.
+            group_delims[group_delims == group_leader] = group_leader + 1
+            #have to do at least 1 more iteration
+            change_made = TRUE
+          }
+        }
+        if(iteration > n) {
+          print("ruh-roh, something went wrong!")
+        }
+      }
+      #no change was made, which means we're done with our iterations!
+      results = c(results, groups)
+      final_rands = c(final_rands, rand)
+      final_group_delims = c(final_group_delims, group_delims)
+      iterations = c(iterations, iteration)
+    }
+    #results
+    #iterations
+    #final_rands
+    #final_group_delims
+    simulated_extension = c(simulated_extension, mean(results))
+    simulated_extension_iterations = c(simulated_extension_iterations, mean(iterations))
+  }
+
+  p <- p + geom_line(
+    data=data.frame(simulated_extension=simulated_extension, n_vals=n_vals), 
+    aes(x = n_vals, y = simulated_extension), color=passing_penalty)
+  
+  #plot the iterations
+  points(n_vals, simulated_extension_iterations, type="l", col=passing_penalty)
+  points(n_vals, simulated_extension_iterations, col=passing_penalty)
+}
+
+legend("topleft", legend=paste("penalty =", passing_penalties), 
+       fill=passing_penalties, bty="n", cex=.75)
+p
+
+
+```
+
+So THAT'S interesting.  Once you allow for passing, the number of packs starts to look LINEAR.  There's some good some intuition here: if you set the penalty to 1, then at steady state, every person is stuck in a pack if and only if the entire pack in front of him is ordered by speed, and exactly 1 mph apart.   So the average pack length is going to go as log(n) (since we already showed that 1/1 + 1/2 + 1/3 ... looks like log(n)).  Average number of packs should go as n / average length of pack, so n/log(n), which [actually looks pretty linear](http://www.wolframalpha.com/input/?i=plot+(n%2Flog10(n))+for+2+%3C+n+%3C+800000000000000000) (even though it's not).  Simillar logic can convince you that for penalty > 1, we expect something that *looks* linear-ish.
+
+
+

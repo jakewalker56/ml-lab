@@ -1,0 +1,200 @@
+---
+title: "Riddler Airline Seats"
+author: "Jake Walker"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+  html_document:
+    toc: true
+---
+
+```{r, include=FALSE}
+Project = "~/github"
+path= "/ml-lab/data"
+library(data.table)
+library(ggplot2)
+library("devtools")
+install_github('jakewalker56/jml', force = TRUE)
+```
+
+## Problem Summary
+>There’s an airplane with 100 seats, and there are 100 ticketed passengers each with an assigned seat. They line up to board in some random order. However, the first person to board is the worst person alive, and just sits in a random seat, without even looking at his boarding pass. Each subsequent passenger sits in his or her own assigned seat if it’s empty, but sits in a random open seat if the assigned seat is occupied. What is the probability that you, the hundredth passenger to board, finds your seat unoccupied?
+
+## Simulation
+For this problem, I thought I'd try to simulate it first, and then see if we could understand from our results exactly what's happening (read: I couldn't think of the answer, and brute forcing seemed pretty easy). So let's go ahead and simulate!
+
+In this case we're going to look at 1000 iterations with various numbers of seats, and see if we can spot a pattern:
+
+
+```{r fig.width=7}
+n_seats = c(2, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140)
+iterations = 1000
+bad_passengers = c(1)
+result = data.frame(n=vector(), prob=vector())
+for(n in n_seats) {
+  final_person_seats = vector()
+  for(iteration in 1:iterations){ 
+    seat_taken_array = rep(0, n)
+    seat_occupied_by_array = rep(0,n)
+    remaining_seats_array = seq(1, n, length.out=n)
+    for(i in 1:n) {
+      if(i %in% bad_passengers || seat_occupied_by_array[i] != 0){
+        #bad_passengers and people whos seats have been taken select a random unclaimed seat
+        random_seat = sample(remaining_seats_array[remaining_seats_array != 0], 1)
+        seat_taken_array[i] = random_seat
+        seat_occupied_by_array[random_seat] = i
+        remaining_seats_array[random_seat] = 0
+      } else {
+        #good passengers take their own seat
+        seat_taken_array[i] = i
+        seat_occupied_by_array[i] = i
+        remaining_seats_array[i] = 0
+      }
+    }
+    #let's see which seen person n is in:
+    final_person_seats = c(final_person_seats, seat_taken_array[n])
+  }
+  newrow=data.frame(n=n,
+        prob=length(
+          final_person_seats[final_person_seats == n]
+        )/length(final_person_seats))
+  result = rbind(result,newrow)
+}
+plot(result, ylim=c(0,1.0))
+```
+
+Excellent!  It appears the answer is 50%, full stop.  Why might this happen?  Here's how I justify this answer in my head: the only way the last person doesn't get his seat is if someone picks his seat.  But crucially, the only way he **does** get his seat is if someone picks seat #1.
+
+To see this, simply imagine the order things happen.  The bad passenger (person #1) chooses a seat randomly.  Assuming he doesn't pick seat 1 or seat n, he is displacing someone.  Every individual up to that displaced person just takes their own original seat.  When it is the displaced person's turn, he must select randomly.  If he selects seat 1, then everyone after him will select their own seat.  If he selects n, then everyone after him will select their own seat but n, who will be forced to take seat #1.  If he selects anyone else, then this process will repeat for that next displaced person. Hence, person n gets seat n if and only if someone happens to pick seat 1 instead of seat n, which happens 50% of the time.
+
+Great.  Now lets extend the problem.
+
+## Extending the problem
+
+What happens if we have more bad passengers?  What if they're in a weird order?
+```{r fig.width=7}
+n_seats = c(50, 100, 150)
+iterations = 1000
+bad_passengers = c(11, 22, 33)
+result = data.frame(n=vector(), prob=vector())
+for(n in n_seats) {
+  final_person_seats = vector()
+  position_of_interest = n
+  for(iteration in 1:iterations){ 
+    seat_taken_array = rep(0, n)
+    seat_occupied_by_array = rep(0,n)
+    remaining_seats_array = seq(1, n, length.out=n)
+    for(i in 1:n) {
+      if(i %in% bad_passengers || seat_occupied_by_array[i] != 0){
+        #bad_passengers and people whos seats have been taken select a random unclaimed seat
+        random_seat = sample(remaining_seats_array[remaining_seats_array != 0], 1)
+        seat_taken_array[i] = random_seat
+        seat_occupied_by_array[random_seat] = i
+        remaining_seats_array[random_seat] = 0
+      } else {
+        #good passengers take their own seat
+        seat_taken_array[i] = i
+        seat_occupied_by_array[i] = i
+        remaining_seats_array[i] = 0
+      }
+    }
+    #let's see which seen person n is in:
+    final_person_seats = c(final_person_seats, seat_taken_array[position_of_interest])
+  }
+  newrow=data.frame(n=n,
+        prob=length(
+          final_person_seats[final_person_seats == position_of_interest]
+        )/length(final_person_seats))
+  result = rbind(result,newrow)
+}
+result
+plot(result, ylim=c(0,1.0))
+```
+
+This turns out to be exactly what we would expect, right?  There are 4 seats of interest here: seat 11, seat 22, seat 33, and seat n.  One and only one of them will be open by the time we get to person n, all with equal probability.  Hence, we generalize our earlier result and find that the probability of person n getting their own seat is $${{1}\over{p + 1}}$$ where p is the number of bad passengers.
+
+But there's a more interesting case:  What if we want to know the odds for a person other than the last person?  That is pretty easy to simulate, but actually pretty difficult to think about logically.  
+
+But we notice something interesting about this problem: we want to predict the probability of an event from a set of numerical inputs, and we have the ability to generate an arbitrarily large test set.  This sounds like a problem for logistic regression!
+
+So let's do this:  Let's create a training data set by simulating the results for various offsets with various numbers of bad passengers, then model the outcome with a logistic regression.
+
+```{r fig.width=7}
+position_offset = c(5, 10, 20, 50, 75, 100)
+n_seats = c(150, 200, 300, 600)
+iterations = 500
+bad_passenger_array = c(list(1:2), 
+                        list(1:3), 
+                        list(1:4), 
+                        list(1:5), 
+                        list(1:10), 
+                        list(1:30))
+table_data = data.frame(bad_passenger_count=vector(),
+                offset_coefficient=vector(),
+                log_offset_coefficient=vector(), intercept=vector())
+logframe_offset = list()
+logframe_bad_passengers = list()
+logframe_result = list()
+
+for(bad_passengers in bad_passenger_array) {
+  bad_passengers = unlist(bad_passengers)
+  result = data.frame(n=vector(), p=vector(), prob=vector())
+  #we construct these as lists because rbind is computationally expensive; instead
+  #we just rbind them once at the end
+  for(offset in position_offset) {
+    final_person_seats = vector()
+    position_of_interest = n + 1 - offset
+    for(iteration in 1:iterations){ 
+      seat_taken_array = rep(0, n)
+      seat_occupied_by_array = rep(0,n)
+      remaining_seats_array = seq(1, n, length.out=n)
+      for(i in 1:n) {
+        if(i %in% bad_passengers || seat_occupied_by_array[i] != 0){
+          #bad_passengers and people whos seats have been taken select a random unclaimed seat
+          random_seat = sample(remaining_seats_array[remaining_seats_array != 0], 1)
+          seat_taken_array[i] = random_seat
+          seat_occupied_by_array[random_seat] = i
+          remaining_seats_array[random_seat] = 0
+        } else {
+          #good passengers take their own seat
+          seat_taken_array[i] = i
+          seat_occupied_by_array[i] = i
+          remaining_seats_array[i] = 0
+        }
+      }
+      #let's see which seen person n is in:
+      final_person_seats = c(final_person_seats, seat_taken_array[position_of_interest])
+      logframe_offset = c(logframe_offset, offset)
+      logframe_bad_passengers = c(logframe_bad_passengers, length(bad_passengers))
+      logframe_result = c(
+        logframe_result, seat_taken_array[position_of_interest] == position_of_interest)
+    }
+  }
+}
+
+logframe_offset = unlist(logframe_offset)
+logframe_bad_passengers = unlist(logframe_bad_passengers)
+logframe_result = unlist(logframe_result)
+logframe = data.frame(
+  offset=logframe_offset, 
+  bad_passengers=logframe_bad_passengers, 
+  result=logframe_result)
+
+logframe$log_offset = log(logframe$offset)
+logframe$log_bad_passengers = log(logframe$bad_passengers)
+
+#build a logistic model to predict probability
+reg = glm(result ~ offset + log_offset + bad_passengers + log_bad_passengers, 
+          family="binomial", data=logframe)
+print(summary(reg))
+
+```
+It looks like the probability of getting your given seat with p bad passengers in front of you, given that you are n-th last passenger to board (last passenger n = 1, second to last passenger n=2, etc.) is given by:
+
+$${{1}\over{1 + {e}^{-(log(n) - log(p))}}}$$
+or
+$${{1}\over{1 + {e}^{-(log(n/p))}}}$$
+or
+$${{1}\over{1 + {{p}\over{n}}}}$$ 
+
+I have no idea what mathematical reality underlies this, but it's pretty cool!

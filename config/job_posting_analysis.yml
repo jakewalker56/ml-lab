@@ -1,0 +1,6 @@
+db:
+ host : ec2-54-225-192-128.compute-1.amazonaws.com
+ name : d8efehdrafhhkd
+ user : lyllfjkrzfqdit
+ password : VVLA6vJ_NZkuvtvxTIqyQ5l5hL
+ port : 5432

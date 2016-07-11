@@ -29,3 +29,27 @@ reg$coef[2]/sqrt(co[2,2])
 reg$coef[3]/sqrt(co[3,3])
 summary(reg)
 
+
+
+#we can assign household type to individuals if we want to (I'm a bit unclear from )
+#note we could also just use merge() on hh_id to do an inner join if we wanted to here
+individual$household_type <- apply(individual, 1, function(ind, household){
+  type = household[household$hh_id == as.numeric(ind["hh_id"]),][1,"type"]
+  return(type)
+}, household)
+
+summary(individual)
+
+hir <- hir[,-grep("household_type",colnames(hir))]
+
+
+
+
+
+setwd("~/github/ml-lab/data")
+train = read.csv("cardif_claims.csv")
+test = read.csv("cardif_claims_test.csv")
+
+
+
+

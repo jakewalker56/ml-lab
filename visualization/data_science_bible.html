@@ -11,7 +11,6 @@
 
 <meta name="author" content="Jake Walker" />
 
-<meta name="date" content="2016-02-23" />
 
 <title>Plain English Guide to Data Science</title>
 
@@ -229,90 +228,80 @@ div.tocify {
 
 <h1 class="title">Plain English Guide to Data Science</h1>
 <h4 class="author"><em>Jake Walker</em></h4>
-<h4 class="date"><em>February 23, 2016</em></h4>
+<h4 class="date"><em>Updated August, 2016</em></h4>
 
 </div>
 
 
-<div id="goals" class="section level1">
-<h1>Goals</h1>
-<p>I’m going to skip the boring stuff about why this matters, and jump right in to my attempt to explain data science principals in plain english.</p>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>This is my attempt to explain some hard-to-grok data scienceß principals in plain english. It exists because I keep having to look up wikipedia pages that are unnecessarily complicated, and I want a clean and simple explanation for when I inevitably forget everything.</p>
+<!--
+# Distributions
+## Gaussian Distribution
+Different sources will tell you different things about the relationship between Gaussian and Normal distributions.  Some say that a Normal distribution is a Gaussian distribution with a mean of 0 and a variance of 1.  Others will call that the *standard normal* distribution, and say Normal and Gaussian are just synonyms.  As far as I can tell, the second camp is technically correct, but unless you are doing something incredibly specific and technical, you can just treat Gaussian and Normal as synonyms.
+
+-->
+<!---
+## Poisson
+
+## Chi-Squared
+
+## Binomial
+
+## Gamma
+-->
 </div>
-<div id="distributions" class="section level1">
-<h1>Distributions</h1>
-<p>There are several distribution types that are worth knowing about, if for no other reason than that it makes reading technical documentation easier</p>
-<div id="gaussian" class="section level2">
-<h2>Gaussian</h2>
-<p>Different sources will tell you different things about the relationship between Gaussian and Normal distributions. Some say that a Normal distribution is a Gaussian distribution with a mean of 0 and a variance of 1. Others will call that the <em>standard normal</em> distribution, and say Normal and Gaussian are just synonyms. As far as I can tell, the second camp is technically correct, but unless you are doing something incredibly specific and technical, you can just treat those two as synonyms.</p>
-<p>A gaussian distribution is one in which</p>
-</div>
-<div id="poisson" class="section level2">
-<h2>Poisson</h2>
-</div>
-<div id="chi-squared" class="section level2">
-<h2>Chi-Squared</h2>
-</div>
-<div id="binomial" class="section level2">
-<h2>Binomial</h2>
-</div>
-<div id="gamma" class="section level2">
-<h2>Gamma</h2>
-</div>
-<div id="kurtosis" class="section level2">
-<h2>Kurtosis</h2>
-<p><a href="https://en.wikipedia.org/wiki/Kurtosis">Kurtosis</a></p>
-</div>
-</div>
-<div id="cost-function" class="section level1">
+<div id="costfunction" class="section level1">
 <h1>Cost Function</h1>
-<p>The <a href="https://en.wikipedia.org/wiki/Loss_function#Expected_loss">cost function</a> is the function that we are trying to minimize when we run a regression. In other words, it defines what we mean when we say the model is a “good fit,” and is closely related to the <a href="http://stats.stackexchange.com/questions/6581/what-is-deviance-specifically-in-cart-rpart">deviance</a> (specifically, for linear models the deviance is equal to the sum of the squared residuals (or “errors”“), often abbreviated RSS or SSE. More on deviance later)</p>
-<p>A typical cost function would be the <a href="https://en.wikipedia.org/wiki/Mean_squared_error">mean squared error</a>, which is advantageous both because it is symetric (positive and negative misses look the same) and because it penalizes us for having outliers. A more technical justification for least squares as a cost function is that minimizing least squares is equivalent to maximizing likelihood, assuming normal distributed errors. See <a href="http://cs229.stanford.edu/notes/cs229-notes1.pdf">here</a> for a proof of this, and see the likelihood section below for a discussion of what the heck that means.</p>
+<p>The <a href="https://en.wikipedia.org/wiki/Loss_function#Expected_loss">cost function</a>, or loss function, is the function that we are trying to minimize when we run a regression. In other words, it defines what we mean when we say the model is a “good fit,” and is closely related to the <a href="http://stats.stackexchange.com/questions/6581/what-is-deviance-specifically-in-cart-rpart">deviance</a> (specifically, for linear models the deviance is equal to the sum of the squared residuals, often abbreviated RSS or SSE. More on deviance later)</p>
+<p>A typical cost function would be the <a href="https://en.wikipedia.org/wiki/Mean_squared_error">mean squared error</a>, which is advantageous both because it is symetric (positive and negative errors look the same) and because it penalizes us for having outliers. A more technical justification for least squares as a cost function is that minimizing least squares is equivalent to maximizing likelihood, assuming normaly distributed errors. See <a href="http://cs229.stanford.edu/notes/cs229-notes1.pdf">here</a> for a proof of this, and see the <a href="#likelihood">likelihood</a> section for a discussion of what the heck that means.</p>
+<p>It’s worth noting that the cost function is arbitrary- you can minimize whatever you want. It just turns out that certain cost functions have much nicer properties than others. For example, if you set your cost function to something linear instead of quadratic, you will get bad behavior out of more complicated regression models, because it creates a very flat local gradient curve, making it take much longer (and in some cases with asymtotic activation functions, impossible) to reach global optimas. More on this in the neural network section.</p>
 </div>
-<div id="linear-regression" class="section level1">
+<div id="linearregression" class="section level1">
 <h1>Linear Regression</h1>
-<div id="single-variable" class="section level2">
-<h2>Single Variable</h2>
-</div>
-<div id="multivariable" class="section level2">
-<h2>Multivariable</h2>
-</div>
-<div id="generalized-linear-model" class="section level2">
+<!---
+## Single Variable
+
+## Multivariable
+-->
+<div id="generalizedlinearmodel" class="section level2">
 <h2>Generalized Linear Model</h2>
 <p>I highly recommend the <a href="https://en.wikipedia.org/wiki/Generalized_linear_model#Intuition">Wikipedia aritcle</a> for GLM, as it is unusually accessible and straightforward.</p>
-<p>The Generalized Linear Model is a generalization (surprise) of a linear regression model. GLM assumes some distribution for errors (see Likelihood secion below), some linear function that maps inputs to a single numerical value (e.g. a standard linear coefficients * input values kind of thing), and a “link function.”</p>
-<p>The link function is the <em>inverse</em> of the function that maps our linear function output to our actual prediction for the response. Put another way, the link function is the function that maps response values to the number predicted by our linear model. Put in yet another way, <a href="https://en.wikipedia.org/wiki/Generalized_linear_model#Link_function">“The link function provides the relationship between the linear predictor and the mean of the distribution function”</a></p>
-<p>If you have a GLM model, then in order to make a prediction for y from a new set of inputs, you would perform the following procedure:</p>
+<p>As the name suggests, the Generalized Linear Model is a generalization of a linear regression model. GLM assumes some distribution for errors (see <a href="#likelihood">likelihood</a> section), some linear function that maps inputs to a single numerical value (e.g. linear coefficients x input values), and a “link function.”</p>
+<p>The link function is the <em>inverse</em> of the function that maps our <strong>linear function output</strong> to our <strong>actual prediction for the response variable</strong>. Put another way, the link function is the function that maps response values to the number predicted by our linear model. Put yet another way, <a href="https://en.wikipedia.org/wiki/Generalized_linear_model#Link_function">“The link function provides the relationship between the linear predictor and the mean of the distribution function”</a>.</p>
+<p>Let’s say we have an input vector X with coefficients B. The output of our linear function would be <span class="math inline">\({XB} = {x_0 b_0 + x_1 b_1 + x_2 b_2 + ...}\)</span> This result is a single number. The inverse link function would be some function that maps that single number to some other single number. In the simplest case, you could just set the link function to <span class="math inline">\({f(x) = x}\)</span>, the identity function. The inverse of this function is the same as the function itself, so <span class="math inline">\({{f}^{-1}(x) = f(x) = x}\)</span>. In this special case, GLM become indistinguishable from a standard linear model; you have some linear function of coefficients and inputs <span class="math inline">\({XB}\)</span> which maps to a value, and that value is your predictor for y.</p>
+<p>The nice thing about GLM, and the reason you want a link function other than the identity function, is that it lets us achieve non-linear behavior in our model while still having the simplicity of only needing to estimate linear paramaters.</p>
+<p>In order to fit the coefficients of a GLM, we find the model that minimizes the cost function for a given set of data. We typically use numerical optimization techiques for this such as gradient descent (see <a href="#numericaloptimization">Numerical Optimization</a> section)</p>
+</div>
+<div id="logisticregression" class="section level2">
+<h2>Logistic Regression</h2>
+<p>It turns out a logistic regression is just a GLM with a link function of <span class="math inline">\({{XB} = {ln({{u}\over{1 - u}})}}\)</span> (called the “logit” function or the “log-odds” function), which gives an inverse link function of <span class="math inline">\({{u} = {{1}\over{1+e^{-XB}}}}\)</span>. When you need to make a prediction for y, you find the linear combination of B’s and X’s, and then you perform the inverse link function on your result to get your prediction.</p>
+<p>For example, if you have a GLM model with two inputs (<span class="math inline">\({x_1}\)</span> and <span class="math inline">\({x_2}\)</span>) and three coefficients (<span class="math inline">\({b_0}\)</span>, <span class="math inline">\({b_1}\)</span>, and <span class="math inline">\({b_2}\)</span>, where ${b_0} is the bias), then in order to make a prediction for y from a new set of inputs, you perform the following procedure:</p>
 <ol style="list-style-type: decimal">
-<li>Use the coefficients in your model to predict n (e.g. <em>n = B_0 + x_1 B_1 + x_2 B_2 …</em>)</li>
-<li>Transform your value n using the inverse link function</li>
+<li>Use the coefficients in your model to predict n <span class="math display">\[{n = b_0 + x_1 b_1 + x_2 b_2}\]</span></li>
+<li>Transform your value n using the inverse link function <span class="math display">\[{y} = {{1}\over{1+{e}^{-n}}}\]</span></li>
 <li>The result of that transformation is your prediction for y</li>
 </ol>
-<p>The nice thing about GLM is that it lets us achieve non-linear behavior in our model, but still have the simplicity of only needing to estimate linear paramaters (e.g. estimate the coefficients B_0, B_1, B_2, etc.)</p>
-<p>In the simplest case, you could just set the link function to f(x) = x, the identity function. The inverse of this function is the same as the function itself, so f^-1(x) = f(x) = x. In this special case, GLM become indistinguishable from a standard linear model. You have some linear function of coefficients * inputs which maps to a value, and that value is your predictor for y.</p>
-<p>In order to fit the coefficients of a GLM, we find the model that maximizes the likelihood (or log-likelihood) function for our response (see likelihood section below). We typically use numerical optimization techiques for this such as gradient descent (see Numerical Optimization section below)</p>
-</div>
-<div id="logistic-regression" class="section level2">
-<h2>Logistic Regression</h2>
-<p>But you can have a more complicated link function if you want! It turns out a logistic regression is just a GLM with a link function of XB = ln(u/(1 - u)) (called the “logit”&quot; function or the “log-odds” function), which gives an inverse link function of u = 1/(1+exp(-XB)). When you need to make a prediction for y, you find the linear combination of B’s and X’s, and then you perform the inverse link function on your result to get your prediction.</p>
-<p>This has some nice properties. It means that your response will always range from 0-1, which is nice because that’s what probabilities do. It also means our B’s have a straightforward interpretation: B_i is the mulitpicative change in <strong>odds</strong> (not probability) associated with a one-unit increase in X_i.</p>
-<p>For example: if B_i is 1.5, then a 1 unit change in X corresponds with a 1.5 times increase in the odds of whatever you’re predicting. If your default odds are 1:10, then a 1 unit increase in X_i means your new odds are 1.5:10 (and your probability is 1.5/(1.5 + 10))</p>
-<p>It’s important to note here that the derivative of the inverse link function (lets call it g, so g = f^-1(X)) is given as g’ = g(1-g) dg. This is useful because some of the coefficient estimation techniques require us to know the slope of the the response with respect to the input variables. Since it’s really easy to calculate the derivative of the inverse logit function, it makes it particularly useful for these kinds of applications (see neural networks section below)</p>
-<p>My big takeaway- and the thing that isn’t really discussed very well in most places- is that <strong>the logit function is totally arbitrary</strong>. It happens to have some nice properties- bounded between 0 and 1, easy to differentiate, etc. - but there’s no a priori reason to think this is the optimal function for every data distribution. It’s really just a regular old GLM- it’s mapping X’s to numeric values, then transforming those numeric values to be between 1 and 0. That’s it. No magic at all.</p>
-<p>The biggest implication of this (to me, anyway), is that when you get a prediction from a logistic regression, that’s our best estimate of the probability from a <em>linear model we built to estimate the log of the odds</em>. If the log odds don’t actually go linearly, then our model is going to be bad. Full stop. I’ve built models on data before that predict a probability of 10% given a common set of inputs, but then I look at the actual incidence for those inputs and it’s more like 3%, and I’m confused- shouldn’t my model be relatively close to the mean at every given point? Well, there’s no guarantee, no. If you’re using data that isn’t highly explanatory, or if the relationship between X and log odds isn’t linear, then a logit transform isn’t going to do much good.</p>
+<p>In the above case, our linear mapping function is just the linear combination <span class="math inline">\({n} = {b_0 + x_1 b_1 + x_2 b_2}\)</span>. The inverse link function is <span class="math inline">\({{1}\over{1+{e}^{-n}}}\)</span>.</p>
+<p>This has some nice properties. It means that your response will always range from 0 to 1, which is nice because that’s what probabilities do. It also means our b’s have a straightforward interpretation: <span class="math inline">\({e}^{b_i}\)</span> is the mulitpicative change in <strong>odds</strong> (not probability) associated with a one-unit increase in <span class="math inline">\({x_i}\)</span>.</p>
+<p>For example: if <span class="math inline">\({b_i}\)</span> is 1.5, then a 1 unit change in <span class="math inline">\({x_i}\)</span> corresponds with a <span class="math inline">\({e}^{1.5}={4.48}\)</span> times increase in the odds of whatever you’re predicting. If your default odds are <span class="math inline">\({1}\over{10}\)</span>, then a 1 unit increase in <span class="math inline">\({x_i}\)</span> means your new odds are <span class="math inline">\({4.48}\over{10}\)</span>, and your probability goes from <span class="math inline">\({1}\over{1 + 10}\)</span> to <span class="math inline">\({4.48}\over{4.48 + 10}\)</span>. See <a href="http://www.ats.ucla.edu/stat/mult_pkg/faq/general/odds_ratio.htm">here</a> for a great explanation of the math.</p>
+<p>It’s important to note here that the derivative of the inverse link function (lets call it <span class="math inline">\({g}\)</span>, so <span class="math inline">\({g} = {f}^{-1}(X)\)</span>) is given as <span class="math inline">\({g'} = {g(1-g) dg}\)</span>. This is useful because some of the coefficient estimation techniques <a href="#gradientdescent">discussed below</a> require us to know the slope of the the response with respect to the input variables. Since it’s really easy to calculate the derivative of the inverse logit function, it makes it particularly useful for these kinds of applications.</p>
+<p>My big takeaway, and the thing that isn’t really discussed very well in most places, is that <strong>the logit function is totally arbitrary</strong>. It happens to have some nice properties- bounded between 0 and 1, easy to differentiate, etc. - but there’s no a priori reason to think this is the optimal function for every data distribution. It’s really just a regular old GLM- it’s mapping X’s to numeric values, then transforming those numeric values to be between 1 and 0. That’s it. No magic at all. No strong theoretical basis. Just a convenient function.</p>
+<p>The biggest implication of this (to me, anyway), is that when you get a prediction from a logistic regression, that’s our best estimate of the probability from a <em>linear model we built to estimate the log of the odds</em>. If the log odds don’t actually go linearly, then our model is going to be bad. Full stop. I’ve built models on data before that predict a probability of 10% given a common set of inputs, but then I look at the actual incidence for those inputs and it’s more like 3%, and I’m confused- shouldn’t my model be relatively close to the mean at every given point? Well, no, there’s no reason to think it would bue unless you assume log-odds is linear. If the relationship between X and log odds isn’t linear, then a logit transform isn’t going to do much good- or it least is going to give you systemically biased predictions.</p>
 <p>You can read a whole lot more on logistic regression <a href="http://www.win-vector.com/blog/2011/09/the-simpler-derivation-of-logistic-regression/">here</a> and <a href="http://www.stat.cmu.edu/~cshalizi/350/lectures/26/lecture-26.pdf">here</a>.</p>
+<!---
+## Multinomial Logistic
+
+P(Y = c | X) = exp(B_0c + B_cX)/SUM(exp(B_0i + B_iX))
+
+## Ordinal Regression
+
+## Probit Regression
+-->
 </div>
-<div id="multinomial-logistic" class="section level2">
-<h2>Multinomial Logistic</h2>
-<p>P(Y = c | X) = exp(B_0c + B_cX)/SUM(exp(B_0i + B_iX))</p>
 </div>
-<div id="ordinal-regression" class="section level2">
-<h2>Ordinal Regression</h2>
-</div>
-<div id="probit-regression" class="section level2">
-<h2>Probit Regression</h2>
-</div>
-</div>
-<div id="model-fit" class="section level1">
+<div id="modelfit" class="section level1">
 <h1>Model Fit</h1>
 <div id="likelihood" class="section level2">
 <h2>Likelihood</h2>
@@ -392,14 +381,13 @@ div.tocify {
 <p>Hence, if our underlying probability model is correct, we will see this exact distribution 2.55% of the time. That is our ‘likelihood’.</p>
 <p>This is a lot more intuitive (at least for me) when dealing with classification models that give you percentages, rather than estimation models that give you expected values. But the actual logic holds for linear regressions too- since linear regressions assume some underlying distribution, we just need to figure out the <a href="https://en.wikipedia.org/wiki/Probability_density_function">probability density function</a> for that distribution, and we can compute the likelihood of the exact observations we made. See <a href="http://www.statlect.com/normal_distribution_maximum_likelihood.htm">this summary</a> if you still need convincing.</p>
 <p>Notice that we have to know the error distribution in order to say anything about likelihood. If we change our assumptions about the error distribution, we have to change what we say about the likelihood of the observations.</p>
-<p>Notice that adding more observations to our training set <em>always makes our likelihood go down</em>. This makes perfect sense- unless the probability of the next observation is exactly 1 or exactly 0, then it’s always less likely that we’ll see this current distribution <em>plus one extra observation</em> than it is that we’ll see this current distribution.</p>
-<p>When talking about <a href="https://en.wikipedia.org/wiki/Maximum_likelihood#Properties">maximum-likelihood</a>, you may sometimes see a formula written (with different variable names) as</p>
-<p>l(M | x) = 1/n * SUM(ln(f(x | M)))</p>
-<p>This is kind of confusing, right? We just talked about how the likelihood of a model is the likelihood of each of the events happening multiplied together. However, notice the <a href="https://en.wikipedia.org/wiki/Logarithm#Product.2C_quotient.2C_power_and_root">product rule</a> of logarithms: log(a) + log(b) = log(a * b). So we could rewrite this formulation as :</p>
-<p>l(M | x) = 1/n * ln(f(x_1 | M) * f(x_2 | M) * f(x_3 | M)…)</p>
-<p>In this case, l is actually the average <a href="https://en.wikipedia.org/wiki/Likelihood_function#Log-likelihood">log-likelihood</a> function rather than simple likelihood, mostly because it has some useful properties when it comes time to start taking dirivatives. Since it is monotonically increasing with likelihood, it preserves ordering, and maximizing likelihood is equivalent to maximizing log-likelihood</p>
+<p>Also notice that adding more observations to our training set <em>always makes our likelihood go down</em>. This makes perfect sense- unless the probability of the next observation is exactly 1 or exactly 0, then it’s always less likely that we’ll see this current distribution <em>plus one extra observation</em> than it is that we’ll see this current distribution.</p>
+<p>When talking about <a href="https://en.wikipedia.org/wiki/Maximum_likelihood#Properties">maximum-likelihood</a>, you may sometimes see a formula written (with different variable names) as <span class="math display">\[{l(M \lvert x)} = {{1}\over{n}} \sum{ln(f(x \lvert M))}\]</span></p>
+<p>This is kind of confusing, right? We just talked about how the likelihood of a model is the likelihood of each of the events happening multiplied together. However, notice the <a href="https://en.wikipedia.org/wiki/Logarithm#Product.2C_quotient.2C_power_and_root">product rule</a> of logarithms: log(a) + log(b) = log(a * b). So we could rewrite this formulation as:</p>
+<p><span class="math display">\[{l(M \lvert x)} = {{1}\over{n}} {ln(f(x_1 \lvert M)  * f(x_2 \lvert M) * f(x_3 \lvert M)...)}\]</span></p>
+<p>In this case, l is actually the average <a href="https://en.wikipedia.org/wiki/Likelihood_function#Log-likelihood">log-likelihood</a> function where f is the simple likelihood function. We tend to work with log likelihood instead of likelihood mostly because it has some useful properties when it comes time to start taking derivatives. Since it is monotonically increasing with likelihood, it preserves ordering, and maximizing likelihood is equivalent to maximizing log-likelihood.</p>
 <p>In general, when people talk about likelihood they are typically talking about log-likelihood. It’s a distinction kind of like Gaussian vs. Normal- some people care a lot, but in general getting too wrapped up in likelihood doesn’t matter, since maximizing likelihood is equivalent to maximizing log-likelihood.</p>
-<p>Now here’s the three important facts about likelihood: 1. Maximizing likelihood is the same as minimizing deviance 2. Minimizing sum of least squares in the same as maximizing likelihood for a linear regression (assuming a normal distribution of errors) 3. The way we fit General Linear Models (see below) is by maximizing the likelihood.</p>
+<p>Now here’s the three important facts about likelihood: 1. Maximizing likelihood is the same as minimizing deviance 2. Minimizing sum of least squares in the same as maximizing likelihood for a linear regression (assuming a normal distribution of errors) 3. The way we fit General Linear Models (see <a href="#generallinearmodel">General Linear Model</a> section) is by maximizing the likelihood.</p>
 </div>
 <div id="deviance" class="section level2">
 <h2>Deviance</h2>
@@ -410,33 +398,31 @@ div.tocify {
 <p>Technically speaking, deviance is a fact about the <em>difference</em> between two models, so you can’t calculate the deviance for a single model all by itself. However, consider a “saturated” model, in which the number of observations is the same as the number of parameters. In this model, we can perfectly predict every observation- there is no error. Hence, the likelihood(M) is just 1! Well log(1) is just 0, so the first equation simplifies to the second.</p>
 <p>You may of course use a different model for M1 than the saturated model. In particular, it is common to use M1 with a whole bunch of parameters, and M0 with some subset of those parameters, and then look at the deviance between the two.</p>
 </div>
-<div id="bayes-theorem" class="section level2">
+<div id="bayestheorem" class="section level2">
 <h2>Bayes’ Theorem</h2>
 <p>P(A|B) = P(B|A)* P(A)/P(B) <a href="https://en.wikipedia.org/wiki/Bayes%27_theorem">https://en.wikipedia.org/wiki/Bayes%27_theorem</a> <a href="http://www.yudkowsky.net/rational/bayes" class="uri">http://www.yudkowsky.net/rational/bayes</a> <a href="https://en.wikipedia.org/wiki/Deviance_(statistics)">deviance</a> -2log(p(y|Sigma0) - p(y|sigmas))</p>
 </div>
 </div>
 <div id="regularization" class="section level1">
 <h1>Regularization</h1>
-<div id="lasso-regularization" class="section level2">
-<h2>lasso regularization</h2>
+<!---
+## lasso regularization
+
+## Cross Validation
+
+## Optimization Functions
+-->
 </div>
-<div id="cross-validation" class="section level2">
-<h2>Cross Validation</h2>
-</div>
-<div id="optimization-functions" class="section level2">
-<h2>Optimization Functions</h2>
-</div>
-</div>
-<div id="numerical-optimization-methods" class="section level1">
-<h1>Numerical Optimization Methods</h1>
-<div id="closed-form-solution" class="section level2">
+<div id="numericaloptimization" class="section level1">
+<h1>Numerical Optimization</h1>
+<div id="closedformsolution" class="section level2">
 <h2>Closed Form Solution</h2>
 <p>In the case of the standard OLS linear regression, there is a closed form solution based on matrix math. The derivation is interesting, but here’s the kicker:</p>
 <p>θ = (X^T X)^−1 X^T y</p>
 <p>In practice, we don’t compute it this way because it’s computationally inefficient. Or so the literature says.</p>
 <p>Moreover, this method isn’t useful in a lot of other contexts- for example, any link function that doesn’t have a closed form solution, or any algorithm that employs regularization in model construction. For those, we need numerical optimization techniques</p>
 </div>
-<div id="newtons-method" class="section level2">
+<div id="newtonsmethod" class="section level2">
 <h2>Newton’s Method</h2>
 <p>You can look up the details how how it works, but the general gist is that finding the global minimum of a function of a single variable f(n) can be found by iteratively updating w as follows:</p>
 <p>w_n+1 = w_n - f’(w_n)/f’’(w_n)</p>
@@ -444,11 +430,11 @@ div.tocify {
 <p>W_n+1 = W_n - H^-1(W_n) * delta(f(W_n))</p>
 <p>Where delta(f(W_n)) is the gradient of f (a vector of the first partial derivative) and H is the Hessian matrix (the n x n matrix of partial second derivatives)</p>
 </div>
-<div id="gradient-descent" class="section level2">
+<div id="gradientdescent" class="section level2">
 <h2>Gradient Descent</h2>
 <p>see <a href="http://cs229.stanford.edu/notes/cs229-notes1.pdf">here</a></p>
 </div>
-<div id="stochastic-gradient-descent" class="section level2">
+<div id="stochasticgradientdescent" class="section level2">
 <h2>Stochastic Gradient Descent</h2>
 <ol style="list-style-type: decimal">
 <li>Pick starting values for all coefficients</li>
@@ -460,28 +446,23 @@ div.tocify {
 </ol>
 </div>
 </div>
-<div id="nonlinear-models" class="section level1">
+<div id="nonlinearmodels" class="section level1">
 <h1>Nonlinear Models</h1>
 <p>Nonlinear models come in two flavors, just like linear models-classification and regression. We discuss both types below</p>
-<div id="k-nearest-neighbors" class="section level2">
-<h2>K nearest neighbors</h2>
-</div>
-<div id="trees" class="section level2">
-<h2>Trees</h2>
-</div>
-<div id="forests" class="section level2">
-<h2>Forests</h2>
-</div>
-<div id="boosting" class="section level2">
-<h2>Boosting</h2>
-</div>
-<div id="classification-trees" class="section level2">
-<h2>Classification Trees</h2>
-</div>
-<div id="k-means" class="section level2">
-<h2>K-Means</h2>
-</div>
-<div id="principal-component-analysis" class="section level2">
+<!---
+## K nearest neighbors
+
+## Trees
+
+## Forests
+
+## Boosting
+
+## Classification Trees
+
+## K-Means
+-->
+<div id="principalcomponentanalysis" class="section level2">
 <h2>Principal Component Analysis</h2>
 <p>PCA is a concept that doesn’t fit super nicely into any category. It’s really an exploratory method, helping us descover facts oabout our data that are not obvious from the way we collect it. Put another way, sometimes the particular form of data that we have is an artifact of our particular method of collection. If we had collected some subset of our data in a slightly different way (with a different orthogonal basis), then we would get a much simpler model. Google Research has an excellent intuitive summary of PCA <a href="http://arxiv.org/pdf/1404.1100.pdf">here</a></p>
 <p>One interesting point worth mentioning is that PCA assumes linearity. As it says in the above linked paper, “with this assumption PCA is now limited to re-expressing the data as a linear combination of its basis vectors.”</p>
@@ -489,25 +470,34 @@ div.tocify {
 <p>Another way to think about PCA is that covariance is an expression of <em>redundancy in our data</em>. By recasting our data using a basis where none of our inputs covary, we are getting rid of that redundancy- simplifying and shrinking the number of inputs to be the number of <em>real underlying inputs</em> that actually matter.</p>
 </div>
 </div>
-<div id="neural-networks" class="section level1">
+<div id="neuralnetworks" class="section level1">
 <h1>Neural Networks</h1>
-<div id="recurrent" class="section level2">
-<h2>Recurrent</h2>
 </div>
-<div id="convolutional" class="section level2">
-<h2>Convolutional</h2>
-</div>
-<div id="deep" class="section level2">
-<h2>Deep</h2>
-</div>
-</div>
-<div id="model-composition" class="section level1">
-<h1>Model Composition</h1>
-<p>Tree + logistic xgboost feature hacking bagging and binning</p>
-</div>
-<div id="further-reading" class="section level1">
-<h1>Further Reading</h1>
-<p>Facebook paper Parametric vs non-parametric PCA is non-parametric Additive models are non-parametric Singular Value Decomposition</p>
+<div id="kurtosis" class="section level1">
+<h1>Kurtosis</h1>
+<p><a href="https://en.wikipedia.org/wiki/Kurtosis">Kurtosis</a> is a measure of the “sharpness” of a distribution. It can also be thought of as a measure of “narrowness” of a distribution. Sharpening a distribution has the effect of fattening the tails (that extra area under the curve has to go somewhere!)</p>
+<p>A Normal distribution is simply a _____ distribution with a kurtosis of 3.In practice, many real-world distributions appear to be normal, but in fact have a different kurtosis (financial returns on the stock market being a famous example- we see more long-tail events than we would expect in market data)</p>
+<!--
+## Recurrent
+
+## Convolutional
+
+## Deep
+
+# Model Composition
+Tree + logistic
+xgboost
+feature hacking
+bagging and binning
+
+#Further Reading
+
+Facebook paper
+Parametric vs non-parametric
+  PCA is non-parametric
+  Additive models are non-parametric
+Singular Value Decomposition
+-->
 </div>
 
 

@@ -55,7 +55,8 @@ results = sapply(strategies, function(strategy_1){
   return(sum(sapply(strategies, function(strategy_2){
     return(evaluate(strategy_1, strategy_2))
   }
-  )))
+  #ignore the tie with yourself
+  )) - 0.5)
 })
 
 sapply(seq(from=1, to=length(strategies), by=1), function(i){

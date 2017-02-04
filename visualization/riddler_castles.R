@@ -1,5 +1,7 @@
+library(nnet)
 NUM_SOLDIERS = 100
 CASTLE_VALUES = c(10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
+DEBUG = FALSE
 
 evaluate <- function(x1, x2) {
   if(length(x1) != length(CASTLE_VALUES)){
@@ -26,15 +28,37 @@ evaluate <- function(x1, x2) {
   })
   result = winners * CASTLE_VALUES
   if(sum(result)> sum(CASTLE_VALUES) / 2) {
-    print(paste("Strategy 1 wins: ", sum(result), "-", sum(CASTLE_VALUES) - sum(result)))
+    if(DEBUG){
+      print(paste("Strategy 1 wins: ", sum(result), "-", sum(CASTLE_VALUES) - sum(result)))
+    }
+    return(1)
   } else if(sum(result) < sum(CASTLE_VALUES) / 2) {
-    print(paste("Strategy 2 wins: ", sum(result), "-", sum(CASTLE_VALUES) - sum(result)))
+    if(DEBUG){
+      print(paste("Strategy 2 wins: ", sum(result), "-", sum(CASTLE_VALUES) - sum(result)))
+    }
+    return(0)
   } else {
-    print(paste("Tie Game: ", sum(result), "-", sum(CASTLE_VALUES) - sum(result)))
+    if(DEBUG){
+      print(paste("Tie Game: ", sum(result), "-", sum(CASTLE_VALUES) - sum(result)))
+    }
+    return(0.5)
   }
 }
+strategies = list(
+  c(10, 10, 10, 10, 10, 10, 10, 10, 10, 10),
+  c(25, 25, 25, 25, 0, 0, 0, 0, 0, 0),
+  c(24, 24, 23, 23, 1, 1, 1, 1, 1, 1),
+  c(0, 11, 11, 12, 11, 11, 11, 11, 11, 11)
+)
 
-strategy_1 = c(10, 10, 10, 10, 10, 10, 10, 10, 10, 10)
-strategy_2 = c(25, 20, 15, 9, 6, 5, 5, 5, 5, 5)
+results = sapply(strategies, function(strategy_1){
+  return(sum(sapply(strategies, function(strategy_2){
+    return(evaluate(strategy_1, strategy_2))
+  }
+  )))
+})
 
-evaluate(strategy_1, strategy_2)
+sapply(seq(from=1, to=length(strategies), by=1), function(i){
+  return(paste(strategies[i], ": ", results[i]))
+})
+print(paste("winning strategy: ", strategies[which.is.max(results)]))
